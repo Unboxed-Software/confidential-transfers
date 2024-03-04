@@ -7,20 +7,14 @@ import {
   Transaction,
 } from '@solana/web3.js';
 import {
-  AccountState,
-  createAssociatedTokenAccountInstruction,
-  createInitializeDefaultAccountStateInstruction,
-  createInitializeMintInstruction,
-  createMintToCheckedInstruction,
-  createUpdateDefaultAccountStateInstruction,
   ExtensionType,
-  getAssociatedTokenAddress,
   getMintLen,
   TOKEN_2022_PROGRAM_ID,
   MINT_SIZE
 } from '@solana/spl-token';
-import { initializeKeypair } from './initializeKeypair';
-import { createTokenMintWithConfidentialTransfers, createToken22MintWithMetadata } from './utils';
+import { initializeKeypair } from './utils/initializeKeypair';
+import { createToken22MintWithMetadata } from './utils/utils';
+import { createTokenMintWithConfidentialTransfers } from './confidentialTransfer/instruction'
 
 (async () => {})();
 
@@ -28,23 +22,27 @@ async function main() {
   const mintKeypair = Keypair.generate();
 
 
-  const decimals = 9;
+  const decimals = 2;
 
   const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
 
   const payer = await initializeKeypair(connection);
 
-
+  // ***************************************************************** //
+  // sanity check that you can create mints with a different extension
   const testMintKeypair = Keypair.generate();
   const testMint = testMintKeypair.publicKey;
 
   const testTx = await createToken22MintWithMetadata(connection, testMintKeypair, payer)
   console.log(`Test Transaction:  https://explorer.solana.com/tx/${testTx}?cluster=devnet`)
+  // ***************************************************************** //
 
   console.log("Default MINT SIZE: ", MINT_SIZE)
-  const extensions = [ExtensionType.ConfidentialTransferMint];
-  const mintLen = getMintLen(extensions);
-  console.log("Confidential transfer size: ", mintLen)
+  const metadataExtension = [ExtensionType.MetadataPointer];
+  console.log("Metadata Pointer extension size: ", getMintLen(metadataExtension));
+  // const extensions = [ExtensionType.ConfidentialTransferMint];
+  // const mintLen = getMintLen(extensions);
+  // console.log("Confidential transfer size: ", mintLen)
 
 
   const transactionSignature = await createTokenMintWithConfidentialTransfers(connection, payer, mintKeypair,  decimals, payer.publicKey, payer.publicKey)

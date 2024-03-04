@@ -16,7 +16,7 @@ export async function initializeKeypair(connection: web3.Connection): Promise<we
   const secret = JSON.parse(process.env.PRIVATE_KEY ?? '') as number[];
   const secretKey = Uint8Array.from(secret);
   const keypairFromSecretKey = web3.Keypair.fromSecretKey(secretKey);
-  await airdropSolIfNeeded(keypairFromSecretKey, connection);
+  // await airdropSolIfNeeded(keypairFromSecretKey, connection);
   return keypairFromSecretKey;
 }
 
