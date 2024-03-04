@@ -142,7 +142,7 @@ export async function createTokenMintWithConfidentialTransfers(
     const transaction = new Transaction().add(
         createAccountInstruction,
         initializeConfidentialTransferInstruction,
-        //initializeMintInstruction
+        initializeMintInstruction
     );
     
     return await sendAndConfirmTransaction(
