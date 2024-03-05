@@ -101,7 +101,7 @@ export async function createTokenMintWithConfidentialTransfers(
     decimals: number = 2,
     mintAuthority: PublicKey = payer.publicKey,
     freezeAuthority: PublicKey | null,
-): Promise<string> {
+) {
     // Define confidential transfer extension for the mint
     const extensions = [ExtensionType.ConfidentialTransferMint];
     // Get the public key of the mint account
@@ -109,16 +109,22 @@ export async function createTokenMintWithConfidentialTransfers(
 
     // Calculate the required space for the mint account
     const mintLen = getMintLen(extensions);
+    // const mintLen = getMintLen(MINT_SIZE + 33 + 1 + 33)
     console.log("Confidential transfer size from solana/web3.js: ", mintLen)
+    // const manualConfidentialAccountSize = MINT_SIZE + 32 + 1 + 32
+    let manualConfidentialAccountSize = 235
 
+    console.log("Manual Confidential Mint Size: ", manualConfidentialAccountSize);
     // Get the minimum required lamports for the mint account creation
-    const lamports = await connection.getMinimumBalanceForRentExemption(mintLen);
+    // const lamports = await connection.getMinimumBalanceForRentExemption(mintLen);
+    const lamports = await connection.getMinimumBalanceForRentExemption(manualConfidentialAccountSize);
 
     // Create an instruction to create the mint account
     const createAccountInstruction = SystemProgram.createAccount({
         fromPubkey: payer.publicKey,
         newAccountPubkey: mintAccount,
-        space: mintLen,
+        // space: mintLen,
+        space: manualConfidentialAccountSize,
         lamports,
         programId: TOKEN_2022_PROGRAM_ID,
     });
@@ -142,12 +148,14 @@ export async function createTokenMintWithConfidentialTransfers(
     const transaction = new Transaction().add(
         createAccountInstruction,
         initializeConfidentialTransferInstruction,
-        initializeMintInstruction
+        initializeMintInstruction,
     );
-    
+
     return await sendAndConfirmTransaction(
-        connection,
-        transaction,
-        [payer, mintKeypair],
-    );
+            connection,
+            transaction,
+            [payer, mintKeypair],
+        );
+
+
 }
